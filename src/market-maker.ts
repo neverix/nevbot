@@ -43,7 +43,7 @@ const betOnTopMarkets = async (excludeContractIds: string[]) => {
   const markets = await getAllMarkets()
   console.log('Loaded', markets.length)
 
-  const openBinaryMarkets = markets
+  let openBinaryMarkets = markets
     .filter((market) => market.outcomeType === 'BINARY')
     .filter(
       (market) =>
@@ -52,21 +52,27 @@ const betOnTopMarkets = async (excludeContractIds: string[]) => {
     .filter((market) => !excludeContractIds.includes(market.id))
 
   console.log('Open binary markets', openBinaryMarkets.length)
+  openBinaryMarkets = openBinaryMarkets.sort(() => Number(Math.random() > 0.5));
+  openBinaryMarkets = openBinaryMarkets.slice(0, 10);
 
   await batchedWaitAll(
     openBinaryMarkets.map((market) => async () => {
       const fullMarket = await getFullMarket(market.id)
-      const marketBets = fullMarket.bets.filter(
-        (bet) => bet.limitProb === undefined
-      )
+      // if(!fullMarket.bets) return;
+      // const marketBets = fullMarket.bets.filter(
+      //   (bet) => bet.limitProb === undefined
+      // )
 
-      if (marketBets.length >= 10) {
-        const bets = await placeLimitBets(fullMarket)
-        if (bets.length)
-          console.log('Placed orders for', fullMarket.question, ':', bets)
-      }
-    }),
-    10
+      // if (marketBets.length >= 10) {
+      //   // const bets = await placeLimitBets(fullMarket)
+      //   if (bets.length)
+      //     console.log('Placed orders for', fullMarket.question, ':', bets)
+      // }
+      fullMarket.question;
+      return;
+      await placeBet({       outcome: 'YES' as const,
+      amount: 1, contractId: fullMarket.id });
+    })
   )
 }
 

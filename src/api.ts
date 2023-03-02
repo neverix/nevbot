@@ -34,7 +34,7 @@ export const getAllMarkets = async () => {
     before = markets[markets.length - 1].id
     console.log('Loaded', allMarkets.length, 'markets', 'before', before)
 
-    if (markets.length < 1000) break
+    if (allMarkets.length > 1000) break
   }
 
   return allMarkets
@@ -54,8 +54,10 @@ const getBets = async (
 ) => {
   const bets: Bet[] = await fetch(
     before
-      ? `${API_URL}/bets?username=${username}&limit=${limit}&before=${before}`
-      : `${API_URL}/bets?username=${username}&limit=${limit}`
+      ? `${API_URL}/bets?limit=${limit}&before=${before}`
+      : `${API_URL}/bets?limit=${limit}`
+      // ? `${API_URL}/bets?username=${username}&limit=${limit}&before=${before}`
+      // : `${API_URL}/bets?username=${username}&limit=${limit}`
   ).then((res) => res.json())
   return bets
 }
@@ -71,7 +73,7 @@ export const getAllBets = async (username: string) => {
     before = bets[bets.length - 1].id
     console.log('Loaded', allBets.length, 'bets', 'before', before)
 
-    if (bets.length < 1000) break
+    if (allBets.length > 1000) break
   }
 
   return allBets
