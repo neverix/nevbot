@@ -77,17 +77,20 @@ const betOnTopMarkets = async (openai: typeof OpenAIApi, excludeContractIds: str
       const completion = await openai.createCompletion({
         model: "code-davinci-002",
         prompt: "Manibot is an accurate forecaster who can answer factual questions well.\n"
-                + "Will Joe Biden win the presidential Election? YES\n"
-                + "Will a nuclear weapon be detonated in 2022? (tests included)? NO\n"
-                + fullMarket.question,
+                + "Will Joe Biden win the presidential Election?\nA: YES\n"
+                + "Will a nuclear weapon be detonated in 2022? (tests included)?\nA: NO\n"
+                + fullMarket.question + "\nA:",
         logprobs: 5,
         max_tokens: 1
       });
-      console.log(completion.data.choices[0].logprobs);
-      process.exit();
-      return;
-      await placeBet({       outcome: 'YES' as const,
-      amount: 1, contractId: fullMarket.id });
+      const probs = completion.data.choices[0].logprobs.top_logprobs[0];
+      let n = probs[" NO"], y = probs[" YES"];
+      console.log(probs)
+      if(!n || !y) return;
+      n = Math.exp(n), y = Math.exp(y);
+      n = n / (n + y);
+      const outcome = Math.random() < n ? "NO" : "YES";
+      await placeBet({outcome, amount: 1, contractId: fullMarket.id });
     })
   )
 }
