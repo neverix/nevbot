@@ -34,7 +34,7 @@ export const getAllMarkets = async () => {
     before = markets[markets.length - 1].id
     console.log('Loaded', allMarkets.length, 'markets', 'before', before)
 
-    if (allMarkets.length > 1000) break
+    if (allMarkets.length > 500) break
   }
 
   return allMarkets
@@ -73,7 +73,7 @@ export const getAllBets = async (username: string) => {
     before = bets[bets.length - 1].id
     console.log('Loaded', allBets.length, 'bets', 'before', before)
 
-    if (allBets.length > 1000) break
+    if (allBets.length > 500) break
   }
 
   return allBets

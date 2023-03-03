@@ -8,6 +8,7 @@ import {
   placeBet,
 } from './api'
 import type { Bet, FullMarket } from './types'
+const { Configuration, OpenAIApi } = require("openai");
 
 const mode = true ? 'ADD_BETS' : 'RESET'
 
@@ -30,16 +31,21 @@ const main = async () => {
     myContractIds.length
   )
 
+  const configuration = new Configuration({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+  const openai = new OpenAIApi(configuration);
+
   if (mode === 'RESET') {
     await cancelLimitBets(myBets)
-    await betOnTopMarkets([])
+    await betOnTopMarkets(openai, [])
   } else {
     // Bet on new markets.
-    await betOnTopMarkets(myContractIds)
+    await betOnTopMarkets(openai, myContractIds)
   }
 }
 
-const betOnTopMarkets = async (excludeContractIds: string[]) => {
+const betOnTopMarkets = async (openai: typeof OpenAIApi, excludeContractIds: string[]) => {
   const markets = await getAllMarkets()
   console.log('Loaded', markets.length)
 
@@ -68,7 +74,17 @@ const betOnTopMarkets = async (excludeContractIds: string[]) => {
       //   if (bets.length)
       //     console.log('Placed orders for', fullMarket.question, ':', bets)
       // }
-      fullMarket.question;
+      const completion = await openai.createCompletion({
+        model: "code-davinci-002",
+        prompt: "Manibot is an accurate forecaster who can answer factual questions well.\n"
+                + "Will Joe Biden win the presidential Election? YES\n"
+                + "Will a nuclear weapon be detonated in 2022? (tests included)? NO\n"
+                + fullMarket.question,
+        logprobs: 5,
+        max_tokens: 1
+      });
+      console.log(completion.data.choices[0].logprobs);
+      process.exit();
       return;
       await placeBet({       outcome: 'YES' as const,
       amount: 1, contractId: fullMarket.id });
